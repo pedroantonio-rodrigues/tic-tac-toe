@@ -4,12 +4,19 @@ import java.io.Serializable;
 
 import com.tictactoe.classproject.entities.enums.PlayerStatus;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "tb_player")
 public class Player implements Serializable{
-	
 	private static final long serialVersionUID = 1L;
 
-	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String name;
 	private String nickname;
