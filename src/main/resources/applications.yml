@@ -1,7 +1,0 @@
-spring:
-  flyway:
-    url: jdbc:h2://${DATABASE_HOST:localhost}:${DATABASE_PORT:8080}/${DATABASE:register}?createDatabaseIfNotExist=true
-    user: ${DATABASE_USER:root}
-    password: ${DATABASE_PASSWD:root}
-    schemas:
-    - ${DATABASE:register}

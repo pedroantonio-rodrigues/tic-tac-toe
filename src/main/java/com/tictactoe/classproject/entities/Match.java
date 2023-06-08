@@ -1,14 +1,9 @@
 package com.tictactoe.classproject.entities;
 
-import java.time.Instant;
+import jakarta.persistence.*;
 
-import com.tictactoe.classproject.entities.enums.MatchStatus;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -17,120 +12,127 @@ public class Match {
 
 	@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)
-	private Integer id;
-	private Instant startedGame;
-	private Instant finishedGame;
-
-	
-	private BoardGame boardGame;
-
-
+	private Long id;
+	@OneToOne
+	@JoinColumn(name = "playerOne_id")
 	private Player playerOne;
-	
-	
+	@OneToOne
+	@JoinColumn(name = "playerTwo_id")
 	private Player playerTwo;
+	@OneToOne(mappedBy = "match")
+	@JoinColumn(name = "board_game_id")
+	private	BoardGame boardGame;
+	private List<Position> moves;
 
-	private Integer matchStatus;
-
-	public Match() {
-	}
-
-	public Match(Integer id, Instant startedGame, Instant finishedGame, BoardGame boardGame, Player playerOne,
-			Player playerTwo, MatchStatus matchStatus) {
-		this.id = id;
-		this.startedGame = Instant.now();
-		this.finishedGame = finishedGame;
-		this.boardGame = boardGame;
-		this.playerOne = playerOne;
-		this.playerTwo = playerTwo;
-
-		setMatchStatus(matchStatus);
-	}
-	
-	
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public Instant getStartedGame() {
-		return startedGame;
-	}
-
-	public void setStartedGame(Instant startedGame) {
-		this.startedGame = startedGame;
-	}
-
-	public Instant getFinishedGame() {
-		return finishedGame;
-	}
-
-	public void setFinishedGame(Instant finishedGame) {
-		this.finishedGame = finishedGame;
-	}
-
-	public BoardGame getBoardGame() {
-		return boardGame;
-	}
-
-	public void setBoardGame(BoardGame boardGame) {
-		this.boardGame = boardGame;
-	}
-
-	public void setPlayerOne(Player playerOne) {
-		this.playerOne = playerOne;
-	}
-	public Player getPlayerOne() {
+	public Player getPlayerOne(){
 		return playerOne;
 	}
-	
+
+	public Player getPlayerTwo(){
+		return playerTwo;
+	}
+	public void setPlayerOne(Player playerTwo){
+		this.playerTwo = playerTwo;
+	}
 	public void setPlayerTwo(Player playerTwo) {
 		this.playerTwo = playerTwo;
 	}
-	public Player getPlayerTwo() {
-		return playerTwo;
+	public void setMoves(ArrayList<Position> moves) {
+		this.moves = moves;
+	}
+	public BoardGame getBoardGame(){
+		return boardGame;
+	}
+	public void setBoardGame(BoardGame boardGame){
+		this.boardGame = boardGame;
+	}
+	public Match makeMatch(Player playerOne, Player playerTwo){
+		this.playerOne = playerOne;
+		this.playerTwo = playerTwo;
+		this.boardGame = new BoardGame();
+		this.moves = new ArrayList<>();
+		return this;
 	}
 
-	public MatchStatus getMatchStatus() {
-		return MatchStatus.valueOf(matchStatus);
-	}
-
-	public void setMatchStatus(MatchStatus matchStatus) {
-		if (matchStatus != null) {
-			this.matchStatus = matchStatus.getCode();
+	// verified the current player
+	public Object makeMove(Player player, int row, int column) throws Exception{
+		if (!player.equals(getCurrentPlayer())){
+			throw new Exception("Não é a vez do jogador.");
 		}
-	}
-	public void finishMatch() {
-		this.finishedGame = Instant.now();
-	}
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
+		// create a position object on the move
+		Position position = new Position(player, row, column);
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+		//verified if move is valid
+		if (!position.isValidPosition(getBoardGame())) {
+			throw new Exception("Jogada invalida.");
+		}
+		// realize the move
+		String symbol = getPlayerPosition(player);
+		position.makeMove(getBoardGame(), symbol);
+		// add positions on list of moves
+		moves.add(position);
+		// verified if it has a winner
+		if(checkWin(symbol)){
+			return player;
+		}
+		// verified if it has a draw
+		if (checkDraw()){
+			return null;
+		}
+		// change the players
+		switchPlayer();
+		return player;
+	}
+	public Player getCurrentPlayer(){
+		// verifies which player make next movement
+		int totalMoves = moves.size();
+		return totalMoves % 2 == 0 ? playerOne : playerTwo;
+	}
+	private	String getPlayerPosition(Player player){
+		// define the symbol of player
+		return player.equals(playerOne) ? "playerOne" : "playerTwo";
+	}
+	private void switchPlayer(){
+		// change the players
+		Player temp = playerOne;
+		playerOne = playerTwo;
+		playerTwo = temp;
+	}
+	private boolean checkWin(String player) {
+	String[][] board = boardGame.getBoardGame();
+		//verifies the possibilities of victory
+		for (int i = 0; i < 3; i++){
+			//verifies the lines
+			if (board[i][0].equals(player) && board[i][1].equals(player) && board[i][2].equals(player)){
+				return true;
+			}
+			// Verifies the columns
+			if (board[0][i].equals(player) && board[1][i].equals(player) && board[2][i].equals(player)) {
+				return true;
+			}
+		}
+		// Verifies de diagonals
+		if (board[0][0].equals(player) && board[1][1].equals(player) && board[2][2].equals(player)) {
 			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Match other = (Match) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
+		}
+		if (board[0][2].equals(player) && board[1][1].equals(player) && board[2][0].equals(player)) {
+			return true;
+		}
+		return false;
+	}
+	//check if it has a draw
+	private boolean checkDraw() {
+		String[][] board = boardGame.getBoardGame();
+		for (String[] row : board) {
+			for (String position : row) {
+				if (position.isEmpty()) {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 
-	
+
 
 }

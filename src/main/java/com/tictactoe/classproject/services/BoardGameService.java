@@ -12,16 +12,24 @@ import com.tictactoe.classproject.repositories.BoardGameRepository;
 @Service
 public class BoardGameService {
 
+    private final BoardGameRepository repository;
     @Autowired
-    private BoardGameRepository repository;
+    public BoardGameService (BoardGameRepository repository){
+        this.repository = repository;
+    }
 
     public List<BoardGame> findAll() {
         return repository.findAll();
     }
 
-    public BoardGame findById(Integer id) {
-        Optional<BoardGame> obj = repository.findById(id);
-        return obj.get();
+    public BoardGame findById(Long id) {
+        Optional<BoardGame> optionalBoardGame = repository.findById(id);
+        return optionalBoardGame.orElse(null);
     }
-
+    public BoardGame save(BoardGame boardGame){
+        return repository.save(boardGame);
+    }
+    public void deleteById(Long id){
+        repository.deleteById(id);
+    }
 }

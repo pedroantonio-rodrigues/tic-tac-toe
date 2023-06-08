@@ -21,6 +21,6 @@ public class MatchResource {
     @GetMapping
     public ResponseEntity<List<Match>> findAll(){
         List<Match> list = service.findAll();
-        return ResponseEntity.ok().body(list);
+        return ResponseEntity.ok(list);
     }
 }

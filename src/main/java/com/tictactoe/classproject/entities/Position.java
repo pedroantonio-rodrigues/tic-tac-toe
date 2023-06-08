@@ -1,56 +1,52 @@
 package com.tictactoe.classproject.entities;
 
-import java.util.Objects;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+
 
 public class Position {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	@ManyToOne
+	private Player player;
 
-	private Integer row;
-	private Integer column;
+	private int row;
+	private int column;
 
-	public Position(Integer row, Integer column) {
-		super();
+	public Position(){
+	}
+	public Position(Player player, int row, int column) {
+		this.player = player;
 		this.row = row;
 		this.column = column;
 	}
 
-	public Integer getRow() {
+	public Player getPlayer() {
+		return player;
+	}
+	public void setPlayer(Player player){
+		this.player = player;
+	}
+	public int getRow() {
 		return row;
 	}
-
-	public Integer getColumn() {
+	public void setRow(int row){
+		this.row = row;
+	}
+	public int getColumn() {
 		return column;
 	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(row, column);
+	public void setColumn(int column){
+		this.column = column;
 	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Position other = (Position) obj;
-		if (column == null) {
-			if (other.column != null)
-				return false;
-		} else if (!column.equals(other.column))
-			return false;
-		if (row == null) {
-			if (other.row != null)
-				return false;
-		} else if (!row.equals(other.row))
-			return false;
-		return true;
+	// valid position
+	public boolean isValidPosition(BoardGame boardGame){
+		return boardGame.isPositionEmpty(row, column);
+	}// make a move
+	public void makeMove(BoardGame boardGame, String symbol){
+		boardGame.makeMove(row, column, symbol);
 	}
-
-	@Override
-	public String toString() {
-		return "[" + row + "," + column + "]";
-	}
-
 }
