@@ -1,0 +1,13 @@
+<div class="board">
+  <div class="line" *ngFor="let line of board; let i = index">
+    <div class="celula" *ngFor="let celula of line; let j = index" (click) ="makeMove(i , j)" >
+      {{ celula }}
+    </div>
+  </div>
+</div>
+
+<div class="result" *ngIf= "winner || draw">
+  <p *ngIf="winner">Player {{ winner }}</p>
+  <p *ngIf="draw"> Draw! </p>
+  <button (click)="restartGame()">Restart Game</button>
+</div>
